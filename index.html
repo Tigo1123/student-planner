@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Planner</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <header></header>
+
+    <main>
+      <aside class="sidebar">
+        <h2>Dashboard</h2>
+
+        <div class="dashboard-stats">
+          <div class="stat-card">
+            <span class="stat-number" id="totalTasksCount">0</span>
+            <span class="stat-label">Total</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="completedTasksCount">0</span>
+            <span class="stat-label">Completed</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="pendingTasksCount">0</span>
+            <span class="stat-label">Pending</span>
+          </div>
+        </div>
+
+        <div class="dashboard-section">
+          <h3>Today's Tasks</h3>
+          <div id="dashboardTodayTasks"></div>
+        </div>
+
+        <div class="dashboard-section">
+          <h3>Upcoming Events</h3>
+          <div id="dashboardUpcomingEvents"></div>
+        </div>
+      </aside>
+
+      <section class="calendar">
+        <div class="calendar-header">
+          <button id="prevBtn">◀</button>
+
+          <h2 id="monthYearLabel">Loading...</h2>
+
+          <button id="nextBtn">▶</button>
+        </div>
+
+        <div class="weekdays">
+          <div>Sun</div>
+          <div>Mon</div>
+          <div>Tue</div>
+          <div>Wed</div>
+          <div>Thu</div>
+          <div>Fri</div>
+          <div>Sat</div>
+        </div>
+
+        <div class="days"></div>
+      </section>
+
+      <aside class="details">
+        <div class="selected-date">
+          <h3>Selected Date</h3>
+          <p id="selectedDate">No date selected</p>
+        </div>
+        <select id="taskCategory">
+          <option value="Homework">Homework</option>
+          <option value="Exam">Exam</option>
+          <option value="Personal">Personal</option>
+          <option value="Class">Class</option>
+          <option value="Other">Other (custom)</option>
+        </select>
+
+        <div id="customCategoryFields" style="display: none">
+          <input
+            type="text"
+            id="customCategoryName"
+            placeholder="Category name..."
+          />
+          <input type="color" id="customCategoryColor" value="#64748b" />
+        </div>
+
+        <div class="tasks-section">
+          <h3>Tasks</h3>
+
+          <input type="text" id="taskInput" placeholder="Add a task..." />
+          <button id="addTaskBtn">Add Task</button>
+          <div id="taskList"></div>
+        </div>
+      </aside>
+    </main>
+
+    <section class="today">
+      <h2>Today</h2>
+      <button id="jumpToTodayBtn" class="today-jump-btn">Jump To Today</button>
+
+      <div id="todaySummary" class="today-summary"></div>
+    </section>
+
+    <section class="events">
+      <h2>School Events</h2>
+
+      <input type="text" id="eventinput" placeholder="Add your event..." />
+
+      <button id="Addevent">Add Event</button>
+
+      <div id="eventlist"></div>
+    </section>
+    <script defer src="script.js"></script>
+  </body>
+</html>
