@@ -1,0 +1,35 @@
+{
+  "name": "student-planner-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.19 <23"
+  },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "check": "node --check src/server.js && node --check src/app.js && node --check src/config/env.js && node --check src/config/database.js && node --check src/middleware/auth.js && node --check src/middleware/errorHandler.js && node --check src/middleware/rateLimit.js && node --check src/middleware/verifyRequestOrigin.js && node --check src/modules/auth/auth.controller.js && node --check src/modules/auth/auth.routes.js && node --check src/modules/auth/auth.service.js && node --check src/modules/auth/auth.validation.js && node --check src/modules/users/user.service.js && node --check src/modules/planner/planner.controller.js && node --check src/modules/planner/planner.routes.js && node --check src/modules/planner/planner.serializers.js && node --check src/modules/planner/planner.service.js && node --check src/modules/planner/planner.validation.js && node --check src/utils/cookies.js && node --check src/utils/date.js && node --check src/utils/httpError.js && node --check scripts/integration-check.js",
+    "prisma:generate": "prisma generate",
+    "prisma:validate": "prisma validate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "build": "npm run prisma:generate",
+    "verify:integration": "node scripts/integration-check.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.0"
+  }
+}
