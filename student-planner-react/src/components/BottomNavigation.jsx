@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/authContext.js";
 import CourseDialog from "./courses/CourseDialog.jsx";
+import UserAvatar from "./profile/UserAvatar.jsx";
 
 const academicLinks = [["Courses", "/app/courses"], ["Assignments", "/app/assignments"], ["Exams", "/app/exams"], ["Timetable", "/app/timetable"]];
 const addLinks = [
@@ -44,7 +45,7 @@ function BottomNavigation({ onQuickAdd }) {
     {sheet && <CourseDialog sectionLabel="Navigation" title={sheet === "academics" ? "Academics" : sheet === "add" ? "Quick Add" : "More"} onClose={() => setSheet(null)}>
       {sheet === "more" ? <div className="mobile-more-sheet">
         <nav className="mobile-link-sheet" aria-label="More navigation"><Link to="/app/deadlines" onClick={() => setSheet(null)}>Deadlines</Link><Link to="/app#dashboard" onClick={() => setSheet(null)}>Planner / Home</Link></nav>
-        <div className="mobile-account"><span>Signed in as</span><strong>{user.name}</strong><small>{user.email}</small></div>
+        <div className="mobile-account"><UserAvatar user={user} size="small" decorative /><span>Signed in as</span><strong>{user.name}</strong><small>{user.email}</small></div>
         {logoutError && <p className="form-error" role="alert">{logoutError}</p>}
         <button className="danger-button" type="button" onClick={handleLogout} disabled={loggingOut}>{loggingOut ? "Signing out…" : "Logout"}</button>
       </div> : <nav className="mobile-link-sheet" aria-label={sheet === "academics" ? "Academic navigation" : "Quick Add options"}>

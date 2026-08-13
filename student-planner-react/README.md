@@ -14,18 +14,17 @@ records are loaded from the Student Planner API and scoped to the signed-in user
 The API must allow this frontend origin and accept credentialed requests. JWTs
 remain in the API's HttpOnly session cookie and are never read by this app.
 
-## Vercel deployment
+## Render Static Site deployment
 
 - Root directory: `student-planner-react`
-- Framework preset: Vite
 - Build command: `npm run build`
 - Output directory: `dist`
 - Environment variable: `VITE_API_URL=https://<render-service-domain>`
 
-The included `vercel.json` rewrites application paths to `index.html`, so direct
-visits to `/login`, `/register`, and `/app` work with React Router. Set
+Configure Render's rewrite rule from `/*` to `/index.html`, so direct visits to
+`/login`, `/register`, and `/app` work with React Router. Set
 `VITE_API_URL` for Production (and any Preview environment you intend to test),
 then redeploy after changing it because Vite embeds the value at build time.
 
-The Render API's `FRONTEND_ORIGIN` must exactly match the final Vercel HTTPS
+The Render API's `FRONTEND_ORIGIN` must exactly match the final frontend HTTPS
 origin and must not include a trailing slash.

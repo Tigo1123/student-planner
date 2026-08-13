@@ -59,6 +59,11 @@ export function AuthProvider({ children }) {
     }
   }
 
+  function updateUser(nextUser) {
+    setUser(nextUser);
+    return nextUser;
+  }
+
   const value = useMemo(() => ({
     user,
     loading,
@@ -67,6 +72,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     refreshUser,
+    updateUser,
   }), [user, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

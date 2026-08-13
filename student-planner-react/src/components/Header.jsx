@@ -5,19 +5,19 @@ import ReminderBell from "./reminders/ReminderBell.jsx";
 import ReminderPanel from "./reminders/ReminderPanel.jsx";
 import DueReminderBanner from "./reminders/DueReminderBanner.jsx";
 import { useReminders } from "../reminders/reminderContext.js";
+import { useAuth } from "../auth/authContext.js";
+import EditProfileDialog from "./profile/EditProfileDialog.jsx";
+import ProfileHeader from "./profile/ProfileHeader.jsx";
 
 function Header({ todayKey, user, onLogout }) {
   const todayDisplay = getDateDisplay(todayKey);
   const location = useLocation();
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState("");
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
+  const { updateUser } = useAuth();
   const { panelOpen } = useReminders();
-  const initials = user.name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0].toUpperCase())
-    .join("");
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -53,13 +53,6 @@ function Header({ todayKey, user, onLogout }) {
 
       <div className="user-menu">
         <ReminderBell />
-        <div className="profile-badge" aria-label={`Signed in as ${user.name}`}>
-          <span className="profile-avatar" aria-hidden="true">{initials || "S"}</span>
-          <span className="profile-copy">
-            <strong>{user.name}</strong>
-            <small>{user.email}</small>
-          </span>
-        </div>
         <button className="logout-button" type="button" onClick={handleLogout} disabled={loggingOut}>
           {loggingOut ? "Signing out…" : "Logout"}
         </button>
@@ -67,6 +60,9 @@ function Header({ todayKey, user, onLogout }) {
       </div>
       <DueReminderBanner />
       {panelOpen && <ReminderPanel />}
+      <ProfileHeader user={user} onEdit={() => setProfileOpen(true)} />
+      <span className="sr-only" aria-live="polite">{announcement}</span>
+      {profileOpen && <EditProfileDialog user={user} onUserChange={updateUser} onClose={(message) => { setProfileOpen(false); if (message) setAnnouncement(message); }} />}
     </header>
   );
 }
