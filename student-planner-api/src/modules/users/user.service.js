@@ -4,6 +4,7 @@ const safeUserSelect = {
   id: true,
   name: true,
   email: true,
+  profileImageUrl: true,
   createdAt: true,
   updatedAt: true,
 };
@@ -24,4 +25,8 @@ export function createUser({ name, email, passwordHash }) {
     data: { name, email, passwordHash },
     select: safeUserSelect,
   });
+}
+
+export function updateSafeUser(id, data) {
+  return prisma.user.update({ where: { id }, data, select: safeUserSelect });
 }

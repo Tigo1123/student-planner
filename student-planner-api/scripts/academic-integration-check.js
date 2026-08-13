@@ -1,5 +1,6 @@
 import { app } from "../src/app.js";
 import { prisma } from "../src/config/database.js";
+import sharp from "sharp";
 
 const server = app.listen(0);
 await new Promise((resolve) => server.once("listening", resolve));
@@ -38,6 +39,43 @@ const remove = (path, cookie, expected = 204) => request(path, { cookie, expecte
 try {
   const a = await register("a");
   const b = await register("b");
+
+  const profile = await request("/api/users/me", { cookie: a.cookie });
+  assert(profile.user.profileImageUrl === null && !profile.user.profileImagePublicId, "Existing user profile defaults or safe serialization failed");
+  const renamed = await patch("/api/users/me", a.cookie, { name: "  Taj   Eldin  " });
+  assert(renamed.user.name === "Taj   Eldin" && renamed.user.email === a.payload.user.email, "Profile name update or email preservation failed");
+  await patch("/api/users/me", a.cookie, { name: "" }, 400);
+  await patch("/api/users/me", a.cookie, { name: "x".repeat(121) }, 400);
+  await patch("/api/users/me", a.cookie, { name: "Valid", email: "changed@example.com" }, 400);
+
+  async function avatarUpload(cookie, bytes, type, expected = 200) {
+    const form = new FormData();
+    form.append("avatar", new Blob([bytes], { type }), "avatar.bin");
+    const response = await fetch(`${baseUrl}/api/users/me/avatar`, { method: "POST", headers: { Origin: process.env.FRONTEND_ORIGIN, ...(cookie ? { Cookie: cookie } : {}) }, body: form });
+    const payload = await response.json();
+    assert(response.status === expected, `Avatar upload expected ${expected}, received ${response.status}: ${JSON.stringify(payload)}`);
+    return payload;
+  }
+  const jpeg = await sharp({ create: { width: 40, height: 70, channels: 3, background: "#174f5c" } }).jpeg().toBuffer();
+  const png = await sharp({ create: { width: 60, height: 40, channels: 4, background: "#ffae4a" } }).png().toBuffer();
+  const webp = await sharp({ create: { width: 48, height: 48, channels: 3, background: "#7c3aed" } }).webp().toBuffer();
+  const firstAvatar = await avatarUpload(a.cookie, jpeg, "image/jpeg");
+  assert(firstAvatar.user.profileImageUrl?.startsWith("https://") && !firstAvatar.user.profileImagePublicId, "Avatar upload response is unsafe or incomplete");
+  const persistedAvatar = await request("/api/auth/me", { cookie: a.cookie });
+  assert(persistedAvatar.user.profileImageUrl === firstAvatar.user.profileImageUrl, "Avatar did not persist through auth restoration");
+  const secondSession = await request("/api/auth/login", { method: "POST", body: JSON.stringify({ email: a.payload.user.email, password: "test-password-123" }) });
+  assert(secondSession.user.profileImageUrl === firstAvatar.user.profileImageUrl, "Avatar did not persist across a second login/session");
+  const replacement = await avatarUpload(a.cookie, png, "image/png");
+  assert(replacement.user.profileImageUrl !== firstAvatar.user.profileImageUrl, "Avatar replacement did not return a new versioned URL");
+  await avatarUpload(a.cookie, webp, "image/webp");
+  await avatarUpload(a.cookie, Buffer.from("not-an-image"), "image/png", 415);
+  await avatarUpload(a.cookie, Buffer.from("plain text"), "text/plain", 415);
+  await avatarUpload(a.cookie, Buffer.alloc(5 * 1024 * 1024 + 1), "image/png", 413);
+  const noFile = await fetch(`${baseUrl}/api/users/me/avatar`, { method: "POST", headers: { Origin: process.env.FRONTEND_ORIGIN, Cookie: a.cookie } });
+  assert(noFile.status === 400, "Avatar upload without a file should be rejected");
+  await avatarUpload(null, jpeg, "image/jpeg", 401);
+  const removedAvatar = await request("/api/users/me/avatar", { cookie: a.cookie, method: "DELETE" });
+  assert(removedAvatar.user.profileImageUrl === null, "Avatar removal did not restore initials state");
 
   const course = (await post("/api/courses", a.cookie, {
     name: "Database Systems", code: "csc 304", instructor: "Dr. Alex", room: "B12", credits: 3,

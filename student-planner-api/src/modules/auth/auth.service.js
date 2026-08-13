@@ -35,6 +35,7 @@ export async function authenticateUser({ email, password }) {
     id: user.id,
     name: user.name,
     email: user.email,
+    profileImageUrl: user.profileImageUrl,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

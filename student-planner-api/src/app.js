@@ -14,6 +14,7 @@ import { scheduleRouter } from "./modules/schedule/schedule.routes.js";
 import { remindersRouter } from "./modules/reminders/reminders.routes.js";
 import { deadlinesRouter } from "./modules/deadlines/deadlines.routes.js";
 import { academicRouter } from "./modules/academic/academic.routes.js";
+import { profileRouter } from "./modules/profile/profile.routes.js";
 
 export const app = express();
 
@@ -34,6 +35,7 @@ app.get("/api/health", (_request, response) => {
   response.json({ status: "ok" });
 });
 app.use("/api/auth", authRouter);
+app.use("/api/users", profileRouter);
 app.use("/api/courses", coursesRouter);
 app.use("/api/assignments", assignmentsRouter);
 app.use("/api/exams", examsRouter);
