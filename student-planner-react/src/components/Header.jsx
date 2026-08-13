@@ -8,6 +8,7 @@ import { useReminders } from "../reminders/reminderContext.js";
 import { useAuth } from "../auth/authContext.js";
 import EditProfileDialog from "./profile/EditProfileDialog.jsx";
 import ProfileHeader from "./profile/ProfileHeader.jsx";
+import AccountMenu from "./profile/AccountMenu.jsx";
 
 function Header({ todayKey, user, onLogout }) {
   const todayDisplay = getDateDisplay(todayKey);
@@ -15,6 +16,7 @@ function Header({ todayKey, user, onLogout }) {
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const { updateUser } = useAuth();
   const { panelOpen } = useReminders();
@@ -34,7 +36,6 @@ function Header({ todayKey, user, onLogout }) {
   return (
     <header className="app-header">
       <Link className="brand" to="/app" aria-label="Student Planner home">
-        <span className="brand-mark" aria-hidden="true">S</span>
         <span>Student Planner</span>
       </Link>
 
@@ -53,9 +54,7 @@ function Header({ todayKey, user, onLogout }) {
 
       <div className="user-menu">
         <ReminderBell />
-        <button className="logout-button" type="button" onClick={handleLogout} disabled={loggingOut}>
-          {loggingOut ? "Signing out…" : "Logout"}
-        </button>
+        <button className="settings-button" type="button" onClick={() => setAccountOpen(true)} aria-label="Open account settings"><span aria-hidden="true">⚙</span></button>
         {logoutError && <span className="sr-only" role="alert">{logoutError}</span>}
       </div>
       <DueReminderBanner />
@@ -63,6 +62,7 @@ function Header({ todayKey, user, onLogout }) {
       <ProfileHeader user={user} onEdit={() => setProfileOpen(true)} />
       <span className="sr-only" aria-live="polite">{announcement}</span>
       {profileOpen && <EditProfileDialog user={user} onUserChange={updateUser} onClose={(message) => { setProfileOpen(false); if (message) setAnnouncement(message); }} />}
+      {accountOpen && <AccountMenu user={user} loggingOut={loggingOut} logoutError={logoutError} onClose={() => setAccountOpen(false)} onEdit={() => { setAccountOpen(false); setProfileOpen(true); }} onLogout={handleLogout} />}
     </header>
   );
 }
