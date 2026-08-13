@@ -7,6 +7,13 @@ import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { plannerRouter } from "./modules/planner/planner.routes.js";
 import { verifyRequestOrigin } from "./middleware/verifyRequestOrigin.js";
+import { coursesRouter } from "./modules/courses/courses.routes.js";
+import { assignmentsRouter } from "./modules/assignments/assignments.routes.js";
+import { examsRouter } from "./modules/exams/exams.routes.js";
+import { scheduleRouter } from "./modules/schedule/schedule.routes.js";
+import { remindersRouter } from "./modules/reminders/reminders.routes.js";
+import { deadlinesRouter } from "./modules/deadlines/deadlines.routes.js";
+import { academicRouter } from "./modules/academic/academic.routes.js";
 
 export const app = express();
 
@@ -27,6 +34,13 @@ app.get("/api/health", (_request, response) => {
   response.json({ status: "ok" });
 });
 app.use("/api/auth", authRouter);
+app.use("/api/courses", coursesRouter);
+app.use("/api/assignments", assignmentsRouter);
+app.use("/api/exams", examsRouter);
+app.use("/api/schedule", scheduleRouter);
+app.use("/api/reminders", remindersRouter);
+app.use("/api/deadlines", deadlinesRouter);
+app.use("/api/academic", academicRouter);
 app.use("/api", plannerRouter);
 
 app.use(notFound);

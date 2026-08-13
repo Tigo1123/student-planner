@@ -1,21 +1,26 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "./components/Header.jsx";
 import Dashboard from "./components/Dashboard.jsx";
+import DashboardSkeleton from "./components/DashboardSkeleton.jsx";
 import Calendar from "./components/Calendar.jsx";
 import DetailsPanel from "./components/DetailsPanel.jsx";
 import TodaySummary from "./components/TodaySummary.jsx";
 import EventList from "./components/EventList.jsx";
 import BottomNavigation from "./components/BottomNavigation.jsx";
 import LegacyImportDialog from "./components/LegacyImportDialog.jsx";
+import AcademicDateDetails from "./components/AcademicDateDetails.jsx";
+import QuickAddDialog from "./components/QuickAddDialog.jsx";
+import { getAcademicCalendar, getAcademicDashboard } from "./api/academicApi.js";
+import { toLocalDateKey } from "./utils/dateUtils.js";
 import {
   addMonths,
   parseDateKey,
   startOfMonth,
 } from "./utils/dateUtils.js";
 import useTodayKey from "./hooks/useTodayKey.js";
+import useQuickAddIntent from "./hooks/useQuickAddIntent.js";
 import {
-  getMarkedDates,
   getTaskStats,
   getTodayOverview,
   getUpcomingEvents,
@@ -42,6 +47,7 @@ const DEFAULT_TASK_COLOR = "#64748b";
 function PlannerPage() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -53,7 +59,44 @@ function PlannerPage() {
   const [legacyData, setLegacyData] = useState(null);
   const [legacyError, setLegacyError] = useState("");
   const [isImporting, setIsImporting] = useState(false);
+  const [academicCalendar, setAcademicCalendar] = useState([]);
+  const [academicDashboard, setAcademicDashboard] = useState(null);
+  const [academicError, setAcademicError] = useState("");
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const quickAddFocusRef = useRef(null);
+  const [quickAddFocusVersion, setQuickAddFocusVersion] = useState(0);
   const todayKey = useTodayKey();
+
+  useQuickAddIntent("task", ({ date }) => {
+    if (date) navigateToDate(date);
+    else if (!selectedDate) jumpToToday();
+    quickAddFocusRef.current = "task-text";
+    setQuickAddFocusVersion((version) => version + 1);
+  });
+  useQuickAddIntent("event", ({ date }) => {
+    if (date) navigateToDate(date);
+    else if (!selectedDate) jumpToToday();
+    quickAddFocusRef.current = "event-text";
+    setQuickAddFocusVersion((version) => version + 1);
+  });
+
+  useEffect(() => {
+    if (!hasPlannerData || !quickAddFocusRef.current) return;
+    const input = document.getElementById(quickAddFocusRef.current);
+    if (!input) return;
+    input.scrollIntoView({ behavior: "smooth", block: "center" });
+    input.focus({ preventScroll: true });
+    quickAddFocusRef.current = null;
+  }, [hasPlannerData, quickAddFocusVersion, selectedDate]);
+
+  useEffect(() => {
+    if (!hasPlannerData || !["#dashboard", "#calendar"].includes(location.hash)) return;
+    const section = document.getElementById(location.hash.slice(1));
+    if (!section) return;
+    section.setAttribute("tabindex", "-1");
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+    section.focus({ preventScroll: true });
+  }, [hasPlannerData, location.hash, location.key]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -84,6 +127,24 @@ function PlannerPage() {
     };
   }, [user.id, loadAttempt]);
 
+  useEffect(() => {
+    let active = true;
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const from = toLocalDateKey(new Date(year, month, 1));
+    const to = toLocalDateKey(new Date(year, month + 1, 0));
+    getAcademicCalendar(from, to).then((response) => { if (active) setAcademicCalendar(response.items); })
+      .catch((error) => { if (active) setAcademicError(error.message); });
+    return () => { active = false; };
+  }, [currentMonth, tasks, events]);
+
+  useEffect(() => {
+    let active = true;
+    getAcademicDashboard(todayKey).then((response) => { if (active) setAcademicDashboard(response); })
+      .catch((error) => { if (active) setAcademicError(error.message); });
+    return () => { active = false; };
+  }, [todayKey, tasks, events]);
+
   const selectedTasks = useMemo(
     () => tasks.filter((task) => task.date === selectedDate),
     [tasks, selectedDate],
@@ -92,10 +153,16 @@ function PlannerPage() {
     () => events.filter((event) => event.date === selectedDate),
     [events, selectedDate],
   );
-  const markedDates = useMemo(
-    () => getMarkedDates(tasks, events),
-    [tasks, events],
-  );
+  const markersByDate = useMemo(() => {
+    const map = new Map();
+    for (const item of academicCalendar) {
+      const records = map.get(item.date) || new Map();
+      records.set(item.type, (records.get(item.type) || 0) + 1);
+      map.set(item.date, records);
+    }
+    return new Map([...map].map(([date, records]) => [date, [...records].map(([type, count]) => ({ type, count, label: `${type.toLowerCase()}${count === 1 ? "" : "s"}` }))]));
+  }, [academicCalendar]);
+  const selectedAcademicItems = useMemo(() => academicCalendar.filter((item) => item.date === selectedDate), [academicCalendar, selectedDate]);
   const taskStats = getTaskStats(tasks);
   const todayOverview = getTodayOverview(tasks, events, todayKey);
   const upcomingEvents = getUpcomingEvents(events, todayKey);
@@ -265,6 +332,7 @@ function PlannerPage() {
           <button type="button" onClick={() => setPlannerError("")}>Dismiss</button>
         </div>
       )}
+      {academicError && <div className="planner-error-banner" role="alert"><span>Academic overview could not be refreshed: {academicError}</span><button onClick={() => setAcademicError("")}>Dismiss</button></div>}
 
       {isPlannerLoading ? (
         <main className="planner-loading" aria-live="polite">
@@ -291,17 +359,21 @@ function PlannerPage() {
         <>
 
       <main className="planner-layout">
-        <Dashboard
+        {!academicDashboard && !academicError ? <DashboardSkeleton user={user} /> : <Dashboard
           taskStats={taskStats}
           todayTasks={todayOverview.tasks}
           upcomingEvents={upcomingEvents}
           onSelectUpcomingEvent={navigateToDate}
-        />
+          academic={academicDashboard}
+          user={user}
+          todayKey={todayKey}
+          onQuickAdd={() => setQuickAddOpen(true)}
+        />}
         <Calendar
           currentMonth={currentMonth}
           selectedDate={selectedDate}
           todayKey={todayKey}
-          markedDates={markedDates}
+          markersByDate={markersByDate}
           onSelectDate={setSelectedDate}
           onPreviousMonth={() => changeMonth(-1)}
           onNextMonth={() => changeMonth(1)}
@@ -316,6 +388,8 @@ function PlannerPage() {
           onEditTask={handleEditTask}
         />
       </main>
+
+      <AcademicDateDetails date={selectedDate} items={selectedAcademicItems} onQuickAdd={() => setQuickAddOpen(true)} />
 
       <section className="lower-grid" aria-label="Daily planner overview">
         <TodaySummary
@@ -346,7 +420,7 @@ function PlannerPage() {
         </section>
       </section>
 
-      <BottomNavigation />
+      <BottomNavigation onQuickAdd={() => setQuickAddOpen(true)} />
         </>
       )}
 
@@ -359,6 +433,7 @@ function PlannerPage() {
           onStartFresh={handleStartFresh}
         />
       )}
+      {quickAddOpen && <QuickAddDialog selectedDate={selectedDate} onClose={() => setQuickAddOpen(false)} />}
     </div>
   );
 }

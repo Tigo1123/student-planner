@@ -1,0 +1,1 @@
+import{Router}from"express";import{requireAuth}from"../../middleware/auth.js";import{getAcademicCalendar,getAcademicDashboard}from"./academic.controller.js";export const academicRouter=Router();academicRouter.use(requireAuth);academicRouter.get("/calendar",getAcademicCalendar);academicRouter.get("/dashboard",getAcademicDashboard);

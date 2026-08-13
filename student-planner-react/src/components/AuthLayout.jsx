@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import authStudy from "../assets/illustrations/auth-study.svg";
 
 function AuthLayout({ eyebrow, title, description, children }) {
   return (
@@ -16,12 +17,7 @@ function AuthLayout({ eyebrow, title, description, children }) {
             focused workspace.
           </p>
         </div>
-        <div className="auth-preview" aria-hidden="true">
-          <span>Today</span>
-          <div><i />Review biology notes</div>
-          <div><i />Prepare for math exam</div>
-          <div><i />School club meeting</div>
-        </div>
+        <img className="auth-illustration" src={authStudy} alt="" aria-hidden="true" />
       </section>
 
       <section className="auth-card" aria-labelledby="auth-form-title">

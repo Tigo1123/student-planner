@@ -1,0 +1,11 @@
+export const WEEKDAYS = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"];
+export const DAY_LABELS = {MONDAY:"Monday",TUESDAY:"Tuesday",WEDNESDAY:"Wednesday",THURSDAY:"Thursday",FRIDAY:"Friday",SATURDAY:"Saturday",SUNDAY:"Sunday"};
+export function timeToMinutes(value){if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(value||""))return null;const[h,m]=value.split(":").map(Number);return h*60+m}
+export function minutesToTime(minutes){const safe=Math.max(0,Math.min(1439,minutes));return `${String(Math.floor(safe/60)).padStart(2,"0")}:${String(safe%60).padStart(2,"0")}`}
+export function formatScheduleTime(value){const minutes=timeToMinutes(value);if(minutes==null)return value;const h=Math.floor(minutes/60);return `${h%12||12}:${String(minutes%60).padStart(2,"0")} ${h<12?"AM":"PM"}`}
+export const formatScheduleRange=(start,end)=>`${formatScheduleTime(start)} – ${formatScheduleTime(end)}`;
+export const schedulesOverlap=(a,b)=>timeToMinutes(a.startTime)<timeToMinutes(b.endTime)&&timeToMinutes(a.endTime)>timeToMinutes(b.startTime);
+export function currentDay(now=new Date()){return WEEKDAYS[(now.getDay()+6)%7]}
+export function findCurrentClass(items,now=new Date()){const day=currentDay(now),minute=now.getHours()*60+now.getMinutes();return items.find(item=>item.dayOfWeek===day&&timeToMinutes(item.startTime)<=minute&&minute<timeToMinutes(item.endTime))||null}
+export function findNextClass(items,now=new Date()){const todayIndex=WEEKDAYS.indexOf(currentDay(now)),minute=now.getHours()*60+now.getMinutes();let best=null;for(const item of items){const dayOffset=(WEEKDAYS.indexOf(item.dayOfWeek)-todayIndex+7)%7;let minutesAway=dayOffset*1440+timeToMinutes(item.startTime)-minute;if(minutesAway<=0)minutesAway+=7*1440;if(!best||minutesAway<best.minutesAway||minutesAway===best.minutesAway&&item.title?.localeCompare(best.item.title)<0)best={item,minutesAway,dayOffset:Math.floor(minutesAway/1440)}}return best}
+export function getGridBounds(items){if(!items.length)return{start:420,end:1140};const starts=items.map(i=>timeToMinutes(i.startTime)),ends=items.map(i=>timeToMinutes(i.endTime));return{start:Math.max(0,Math.floor(Math.min(420,...starts)/60)*60),end:Math.min(1440,Math.ceil(Math.max(1140,...ends)/60)*60)}}

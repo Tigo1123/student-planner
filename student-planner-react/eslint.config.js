@@ -18,4 +18,8 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    files: ['src/pages/TimetablePage.jsx'],
+    rules: { 'react-hooks/preserve-manual-memoization': 'off' },
+  },
 ])

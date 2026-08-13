@@ -17,6 +17,11 @@ model User {
   legacyImportedAt DateTime?
   tasks            Task[]
   events           Event[]
+  courses          Course[]
+  assignments      Assignment[]
+  exams            Exam[]
+  classSchedules   ClassSchedule[]
+  reminders        Reminder[]
 
   @@map("users")
 }
@@ -31,10 +36,13 @@ model Task {
   color     String   @default("#64748b")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  courseId String?  @db.Uuid
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course?  @relation(fields: [courseId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([userId, date])
+  @@index([courseId])
   @@map("tasks")
 }
 
@@ -46,9 +54,149 @@ model Event {
   completed Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  courseId String?  @db.Uuid
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course?  @relation(fields: [courseId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([userId, date])
+  @@index([courseId])
   @@map("events")
+}
+
+enum AssignmentPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum AssignmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum ReminderEntityType {
+  TASK
+  EVENT
+  ASSIGNMENT
+  EXAM
+}
+
+model Course {
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String          @db.Uuid
+  name           String
+  code           String
+  instructor     String?
+  room           String?
+  credits        Int?
+  semester       String?
+  academicYear   String?
+  color          String          @default("#64748b")
+  icon           String          @default("book")
+  archivedAt     DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks          Task[]
+  events         Event[]
+  assignments    Assignment[]
+  exams          Exam[]
+  classSchedules ClassSchedule[]
+
+  @@index([userId])
+  @@index([userId, archivedAt])
+  @@index([userId, code])
+  @@map("courses")
+}
+
+model Assignment {
+  id          String             @id @default(uuid()) @db.Uuid
+  userId      String             @db.Uuid
+  courseId    String             @db.Uuid
+  title       String
+  description String?
+  dueDate     DateTime           @db.Date
+  priority    AssignmentPriority @default(MEDIUM)
+  status      AssignmentStatus   @default(NOT_STARTED)
+  completed   Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, dueDate])
+  @@index([userId, status, dueDate])
+  @@index([courseId, dueDate])
+  @@map("assignments")
+}
+
+model Exam {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  courseId  String   @db.Uuid
+  title     String
+  examDate  DateTime @db.Date
+  startTime String
+  endTime   String?
+  room      String?
+  topics    Json     @default("[]")
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, examDate])
+  @@index([courseId, examDate])
+  @@map("exams")
+}
+
+model ClassSchedule {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  courseId  String    @db.Uuid
+  dayOfWeek DayOfWeek
+  startTime String
+  endTime   String
+  room      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, dayOfWeek, startTime])
+  @@index([courseId])
+  @@map("class_schedules")
+}
+
+model Reminder {
+  id         String             @id @default(uuid()) @db.Uuid
+  userId     String             @db.Uuid
+  entityType ReminderEntityType
+  entityId   String             @db.Uuid
+  remindAt   DateTime           @db.Timestamptz(3)
+  dismissed  Boolean            @default(false)
+  createdAt  DateTime           @default(now())
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, dismissed, remindAt])
+  @@index([entityType, entityId])
+  @@map("reminders")
 }

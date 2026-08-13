@@ -11,7 +11,7 @@ function Calendar({
   currentMonth,
   selectedDate,
   todayKey,
-  markedDates,
+  markersByDate,
   onSelectDate,
   onPreviousMonth,
   onNextMonth,
@@ -21,7 +21,7 @@ function Calendar({
   const monthGrid = getMonthGrid(currentMonth);
 
   return (
-    <section className="panel calendar-panel" id="calendar" aria-labelledby="calendar-title">
+    <section className="panel calendar-panel" id="calendar" tabIndex="-1" aria-labelledby="calendar-title">
       <div className="calendar-header">
         <div>
           <p className="eyebrow">Study calendar</p>
@@ -61,7 +61,7 @@ function Calendar({
             dateKey={date.dateKey}
             today={isSameDateKey(date.dateKey, todayKey)}
             selected={isSameDateKey(date.dateKey, selectedDate)}
-            marked={markedDates.has(date.dateKey)}
+            markers={markersByDate.get(date.dateKey) || []}
             onSelect={onSelectDate}
           />
         ) : (
@@ -70,7 +70,7 @@ function Calendar({
       </div>
       <div className="calendar-legend">
         <span><i className="legend-dot legend-dot--today" />Today</span>
-        <span><i className="legend-dot" />Tasks or events</span>
+        <span><i className="legend-dot" />Task</span><span><i className="legend-dot legend-dot--event" />Event</span><span><i className="legend-dot legend-dot--assignment" />Assignment</span><span><i className="legend-dot legend-dot--exam" />Exam</span>
       </div>
     </section>
   );

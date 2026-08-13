@@ -1,6 +1,7 @@
 import { prisma } from "../../config/database.js";
 import { HttpError } from "../../utils/httpError.js";
 import { parseDateKey } from "../../utils/date.js";
+import { requireOwnedCourse } from "../courses/courses.service.js";
 
 function taskData(input) {
   return {
@@ -20,11 +21,13 @@ export function listTasks(userId) {
   return prisma.task.findMany({ where: { userId }, orderBy: { createdAt: "asc" } });
 }
 
-export function createTask(userId, input) {
+export async function createTask(userId, input) {
+  if (input.courseId) await requireOwnedCourse(userId, input.courseId);
   return prisma.task.create({ data: { ...taskData(input), userId } });
 }
 
 export async function updateTask(userId, taskId, input) {
+  if (input.courseId) await requireOwnedCourse(userId, input.courseId);
   const updated = await prisma.task.updateMany({
     where: { id: taskId, userId },
     data: taskData(input),
@@ -34,19 +37,25 @@ export async function updateTask(userId, taskId, input) {
 }
 
 export async function deleteTask(userId, taskId) {
-  const deleted = await prisma.task.deleteMany({ where: { id: taskId, userId } });
-  if (deleted.count === 0) throw new HttpError(404, "NOT_FOUND", "Task was not found.");
+  const task = await prisma.task.findFirst({ where: { id: taskId, userId }, select: { id: true } });
+  if (!task) throw new HttpError(404, "NOT_FOUND", "Task was not found.");
+  await prisma.$transaction([
+    prisma.reminder.deleteMany({ where: { userId, entityType: "TASK", entityId: taskId } }),
+    prisma.task.delete({ where: { id: taskId } }),
+  ]);
 }
 
 export function listEvents(userId) {
   return prisma.event.findMany({ where: { userId }, orderBy: { createdAt: "asc" } });
 }
 
-export function createEvent(userId, input) {
+export async function createEvent(userId, input) {
+  if (input.courseId) await requireOwnedCourse(userId, input.courseId);
   return prisma.event.create({ data: { ...eventData(input), userId } });
 }
 
 export async function updateEvent(userId, eventId, input) {
+  if (input.courseId) await requireOwnedCourse(userId, input.courseId);
   const updated = await prisma.event.updateMany({
     where: { id: eventId, userId },
     data: eventData(input),
@@ -56,8 +65,12 @@ export async function updateEvent(userId, eventId, input) {
 }
 
 export async function deleteEvent(userId, eventId) {
-  const deleted = await prisma.event.deleteMany({ where: { id: eventId, userId } });
-  if (deleted.count === 0) throw new HttpError(404, "NOT_FOUND", "Event was not found.");
+  const event = await prisma.event.findFirst({ where: { id: eventId, userId }, select: { id: true } });
+  if (!event) throw new HttpError(404, "NOT_FOUND", "Event was not found.");
+  await prisma.$transaction([
+    prisma.reminder.deleteMany({ where: { userId, entityType: "EVENT", entityId: eventId } }),
+    prisma.event.delete({ where: { id: eventId } }),
+  ]);
 }
 
 export async function importLegacyPlanner(userId, input) {

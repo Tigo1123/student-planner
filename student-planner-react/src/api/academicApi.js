@@ -1,0 +1,1 @@
+import{apiRequest}from"./apiClient.js";export const getAcademicCalendar=(from,to)=>apiRequest(`/api/academic/calendar?from=${from}&to=${to}`);export const getAcademicDashboard=today=>apiRequest(`/api/academic/dashboard?today=${today}`);

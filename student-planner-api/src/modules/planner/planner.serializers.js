@@ -8,6 +8,7 @@ export function serializeTask(task) {
     completed: task.completed,
     category: task.category,
     color: task.color,
+    courseId: task.courseId,
     createdAt: task.createdAt,
     updatedAt: task.updatedAt,
   };
@@ -19,6 +20,7 @@ export function serializeEvent(event) {
     text: event.text,
     date: toDateKey(event.date),
     completed: event.completed,
+    courseId: event.courseId,
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
   };
