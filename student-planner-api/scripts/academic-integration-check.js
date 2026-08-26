@@ -188,6 +188,34 @@ try {
   assert(dashboardA.summary.tasksDue >= 1 && dashboardA.summary.assignmentsDue === 0, "Academic dashboard summary was incorrect");
   assert(dashboardA.summary.completionPercentage >= 0 && dashboardA.summary.completionPercentage <= 100, "Academic dashboard completion was invalid");
   assert(!dashboardB.upcomingDeadlines.some((item) => item.id === task.id || item.id === assignment.id), "Academic dashboard leaked another user's records");
+  assert(!Object.hasOwn(dashboardA.summary, "userId"), "Academic dashboard summary leaked userId");
+
+  // Large dataset completion percentage assertion (>100 tasks and >100 assignments)
+  const bulkUser = await register("bulk");
+  const bulkCourse = (await post("/api/courses", bulkUser.cookie, { name: "Bulk Course", code: "BULK 101" })).course;
+  await prisma.task.createMany({
+    data: Array.from({ length: 120 }, (_, i) => ({
+      userId: bulkUser.payload.user.id,
+      courseId: bulkCourse.id,
+      text: `Bulk Task ${i}`,
+      date: new Date("2026-08-15"),
+      completed: i < 60,
+    })),
+  });
+  await prisma.assignment.createMany({
+    data: Array.from({ length: 120 }, (_, i) => ({
+      userId: bulkUser.payload.user.id,
+      courseId: bulkCourse.id,
+      title: `Bulk Assignment ${i}`,
+      dueDate: new Date("2026-08-15"),
+      completed: i < 30,
+      status: i < 30 ? "COMPLETED" : "NOT_STARTED",
+    })),
+  });
+  const bulkDashboard = await request("/api/academic/dashboard?today=2026-08-13", { cookie: bulkUser.cookie });
+  assert(bulkDashboard.summary.completionPercentage === 38, `Expected completionPercentage 38, got ${bulkDashboard.summary.completionPercentage}`);
+  assert(bulkDashboard.todayClasses.every((item) => !Object.hasOwn(item, "userId")), "Dashboard todayClasses exposed userId");
+  assert(!dashboardB.upcomingDeadlines.some((item) => item.text?.includes("Bulk")), "Tenant isolation failed for bulk user records");
   await remove(`/api/assignments/${assignment.id}`, a.cookie);
   assert(await prisma.reminder.count({ where: { id: assignmentReminder.id } }) === 0, "Assignment reminder was orphaned");
 

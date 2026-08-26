@@ -7,5 +7,51 @@ export const formatScheduleRange=(start,end)=>`${formatScheduleTime(start)} – 
 export const schedulesOverlap=(a,b)=>timeToMinutes(a.startTime)<timeToMinutes(b.endTime)&&timeToMinutes(a.endTime)>timeToMinutes(b.startTime);
 export function currentDay(now=new Date()){return WEEKDAYS[(now.getDay()+6)%7]}
 export function findCurrentClass(items,now=new Date()){const day=currentDay(now),minute=now.getHours()*60+now.getMinutes();return items.find(item=>item.dayOfWeek===day&&timeToMinutes(item.startTime)<=minute&&minute<timeToMinutes(item.endTime))||null}
-export function findNextClass(items,now=new Date()){const todayIndex=WEEKDAYS.indexOf(currentDay(now)),minute=now.getHours()*60+now.getMinutes();let best=null;for(const item of items){const dayOffset=(WEEKDAYS.indexOf(item.dayOfWeek)-todayIndex+7)%7;let minutesAway=dayOffset*1440+timeToMinutes(item.startTime)-minute;if(minutesAway<=0)minutesAway+=7*1440;if(!best||minutesAway<best.minutesAway||minutesAway===best.minutesAway&&item.title?.localeCompare(best.item.title)<0)best={item,minutesAway,dayOffset:Math.floor(minutesAway/1440)}}return best}
-export function getGridBounds(items){if(!items.length)return{start:420,end:1140};const starts=items.map(i=>timeToMinutes(i.startTime)),ends=items.map(i=>timeToMinutes(i.endTime));return{start:Math.max(0,Math.floor(Math.min(420,...starts)/60)*60),end:Math.min(1440,Math.ceil(Math.max(1140,...ends)/60)*60)}}
+export function compareScheduleTieBreaker(a, b) {
+  const codeA = (a.course?.code || "").toLowerCase();
+  const codeB = (b.course?.code || "").toLowerCase();
+  const codeComp = codeA.localeCompare(codeB);
+  if (codeComp !== 0) return codeComp;
+
+  const nameA = (a.course?.name || "").toLowerCase();
+  const nameB = (b.course?.name || "").toLowerCase();
+  const nameComp = nameA.localeCompare(nameB);
+  if (nameComp !== 0) return nameComp;
+
+  const timeA = a.startTime || "";
+  const timeB = b.startTime || "";
+  const timeComp = timeA.localeCompare(timeB);
+  if (timeComp !== 0) return timeComp;
+
+  const idA = String(a.id || "");
+  const idB = String(b.id || "");
+  return idA.localeCompare(idB);
+}
+
+export function findNextClass(items, now = new Date()) {
+  const todayIndex = WEEKDAYS.indexOf(currentDay(now));
+  const minute = now.getHours() * 60 + now.getMinutes();
+  let best = null;
+
+  for (const item of items) {
+    const dayOffset = (WEEKDAYS.indexOf(item.dayOfWeek) - todayIndex + 7) % 7;
+    let minutesAway = dayOffset * 1440 + timeToMinutes(item.startTime) - minute;
+    if (minutesAway <= 0) minutesAway += 7 * 1440;
+
+    if (!best || minutesAway < best.minutesAway || (minutesAway === best.minutesAway && compareScheduleTieBreaker(item, best.item) < 0)) {
+      best = { item, minutesAway, dayOffset: Math.floor(minutesAway / 1440) };
+    }
+  }
+
+  return best;
+}
+
+export function getGridBounds(items) {
+  if (!items.length) return { start: 420, end: 1140 };
+  const starts = items.map((i) => timeToMinutes(i.startTime));
+  const ends = items.map((i) => timeToMinutes(i.endTime));
+  return {
+    start: Math.max(0, Math.floor(Math.min(420, ...starts) / 60) * 60),
+    end: Math.min(1440, Math.ceil(Math.max(1140, ...ends) / 60) * 60),
+  };
+}
