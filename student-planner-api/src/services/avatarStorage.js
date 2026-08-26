@@ -27,11 +27,16 @@ function uploadCloudinary(buffer, userId) {
   });
 }
 
+export function getAvatarBuffer(publicId) {
+  return memoryObjects.get(publicId) || null;
+}
+
 export async function uploadAvatar(buffer, userId) {
   if (env.AVATAR_STORAGE_PROVIDER === "cloudinary") return uploadCloudinary(buffer, userId);
   const publicId = `test-avatar-${userId}-${crypto.randomUUID()}`;
   memoryObjects.set(publicId, buffer);
-  return { url: `https://avatar.test/${publicId}.webp`, publicId };
+  const baseUrl = `http://localhost:${env.PORT}`;
+  return { url: `${baseUrl}/api/users/avatars/${publicId}.webp`, publicId };
 }
 
 export async function deleteAvatar(publicId) {

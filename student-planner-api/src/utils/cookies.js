@@ -7,7 +7,7 @@ function baseCookieOptions() {
   const isProduction = env.NODE_ENV === "production";
   return {
     httpOnly: true,
-    sameSite: isProduction ? "none" : "lax",
+    sameSite: "lax",
     secure: isProduction,
     path: "/",
   };

@@ -60,7 +60,7 @@ try {
   const png = await sharp({ create: { width: 60, height: 40, channels: 4, background: "#ffae4a" } }).png().toBuffer();
   const webp = await sharp({ create: { width: 48, height: 48, channels: 3, background: "#7c3aed" } }).webp().toBuffer();
   const firstAvatar = await avatarUpload(a.cookie, jpeg, "image/jpeg");
-  assert(firstAvatar.user.profileImageUrl?.startsWith("https://") && !firstAvatar.user.profileImagePublicId, "Avatar upload response is unsafe or incomplete");
+  assert((firstAvatar.user.profileImageUrl?.startsWith("http://") || firstAvatar.user.profileImageUrl?.startsWith("https://")) && !firstAvatar.user.profileImagePublicId, "Avatar upload response is unsafe or incomplete");
   const persistedAvatar = await request("/api/auth/me", { cookie: a.cookie });
   assert(persistedAvatar.user.profileImageUrl === firstAvatar.user.profileImageUrl, "Avatar did not persist through auth restoration");
   const secondSession = await request("/api/auth/login", { method: "POST", body: JSON.stringify({ email: a.payload.user.email, password: "test-password-123" }) });

@@ -2245,3 +2245,166 @@ button:disabled { cursor: not-allowed; opacity: 0.56; }
   display: block;
   pointer-events: none;
 }
+
+/* =========================================================
+   Student Planner - Authentication Loading Screen
+   ========================================================= */
+
+.auth-loading {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+  overflow: hidden;
+  color: var(--text-primary);
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(23, 79, 92, 0.08),
+      transparent 32%
+    ),
+    var(--background);
+}
+
+.auth-loading__brand {
+  position: relative;
+  width: 78px;
+  height: 78px;
+  display: grid;
+  place-items: center;
+}
+
+.auth-loading__logo {
+  position: relative;
+  z-index: 2;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  color: white;
+  background: var(--primary);
+  font-size: 1rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  box-shadow:
+    0 12px 30px rgba(23, 79, 92, 0.22),
+    0 2px 6px rgba(23, 79, 92, 0.12);
+}
+
+.auth-loading__pulse {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(23, 79, 92, 0.18);
+  border-radius: 26px;
+  animation: auth-loading-pulse 1.8s ease-out infinite;
+}
+
+.auth-loading__content {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.auth-loading__content h1 {
+  margin: 0;
+  color: var(--primary-dark);
+  font-size: clamp(1.25rem, 4vw, 1.55rem);
+  font-weight: 820;
+  letter-spacing: -0.025em;
+}
+
+.auth-loading__content p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.auth-loading__indicator {
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.auth-loading__indicator span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: auth-loading-dot 1.1s ease-in-out infinite;
+}
+
+.auth-loading__indicator span:nth-child(2) {
+  animation-delay: 0.14s;
+}
+
+.auth-loading__indicator span:nth-child(3) {
+  animation-delay: 0.28s;
+}
+
+@keyframes auth-loading-pulse {
+  0% {
+    opacity: 0.65;
+    transform: scale(0.82);
+  }
+
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.22);
+  }
+}
+
+@keyframes auth-loading-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-loading {
+    gap: 16px;
+  }
+
+  .auth-loading__brand {
+    width: 72px;
+    height: 72px;
+  }
+
+  .auth-loading__logo {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+  }
+
+  .auth-loading__content p {
+    font-size: 0.74rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-loading__pulse,
+  .auth-loading__indicator span {
+    animation: none;
+  }
+
+  .auth-loading__indicator span {
+    opacity: 0.6;
+  }
+}
