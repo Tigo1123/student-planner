@@ -1,3 +1,4 @@
+import PasswordInput from "../components/PasswordInput.jsx";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
@@ -71,10 +72,12 @@ function RegisterPage() {
 }
 
 function AuthField({ id, label, type = "text", value, autoComplete, inputMode, error, onChange }) {
+  const Input = type === "password" ? PasswordInput : "input";
   return (
     <div className="auth-field">
       <label htmlFor={id}>{label}</label>
-      <input
+      <Input
+        {...(type === "password" ? { visibilityLabel: label.toLowerCase(), maxLength: 128 } : {})}
         id={id}
         type={type}
         value={value}

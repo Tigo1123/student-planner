@@ -12,6 +12,9 @@ model User {
   name             String
   email            String    @unique
   passwordHash     String
+  sessionVersion Int @default(0)
+  resetPasswordTokenHash String? @unique
+  resetPasswordExpiresAt DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   onboardingCompleted Boolean @default(false)

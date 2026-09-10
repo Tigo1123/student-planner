@@ -21,8 +21,8 @@ export async function register(request, response) {
 
 export async function login(request, response) {
   const input = requireValidBody(loginSchema, request.body);
-  const user = await authenticateUser(input);
-  setAuthCookie(response, createAuthToken(user.id));
+  const { user, sessionVersion } = await authenticateUser(input);
+  setAuthCookie(response, createAuthToken(user.id, sessionVersion));
   response.json({ user });
 }
 

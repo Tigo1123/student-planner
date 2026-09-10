@@ -2434,3 +2434,14 @@ button:disabled { cursor: not-allowed; opacity: 0.56; }
 .onboarding-save { font-size: .8rem; color: var(--text-secondary); }
 @media (min-width: 900px) { .onboarding-page { grid-template-columns: .8fr 1.5fr; } .onboarding-intro { position: sticky; top: 32px; } .onboarding-intro img { display: block; } }
 @media (max-width: 600px) { .onboarding-card .course-form__grid, .onboarding-card .schedule-form__grid { grid-template-columns: minmax(0, 1fr); } .onboarding-list li { flex-wrap: wrap; } }
+
+.password-input { position: relative; min-width: 0; width: 100%; }
+.auth-field .password-input input { width: 100%; padding-right: 54px; }
+.password-input__toggle { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 10px; background: transparent; color: var(--primary); cursor: pointer; }
+.password-input__toggle:hover { background: var(--cream); }
+.password-input__toggle:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: -2px; }
+.password-input__toggle svg { width: 22px; height: 22px; }
+.auth-recovery-link { justify-self: end; color: var(--primary); font-size: 0.875rem; font-weight: 600; padding: 6px 0; text-decoration: underline; text-underline-offset: 3px; }
+.auth-recovery-link:hover { color: var(--primary-dark); }
+.auth-recovery-link:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 4px; border-radius: 3px; }
+.auth-success { padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-input); background: var(--cream); line-height: 1.6; }

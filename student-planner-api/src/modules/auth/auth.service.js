@@ -7,9 +7,10 @@ import { HttpError } from "../../utils/httpError.js";
 import { createUser, findUserByEmail } from "../users/user.service.js";
 
 const PASSWORD_HASH_ROUNDS = 12;
+export const hashPassword = password => bcrypt.hash(password, PASSWORD_HASH_ROUNDS);
 
 export async function registerUser({ name, email, password }) {
-  const passwordHash = await bcrypt.hash(password, PASSWORD_HASH_ROUNDS);
+  const passwordHash = await hashPassword(password);
 
   try {
     return await createUser({ name, email, passwordHash });
@@ -31,7 +32,7 @@ export async function authenticateUser({ email, password }) {
     throw new HttpError(401, "INVALID_CREDENTIALS", "Invalid email or password.");
   }
 
-  return {
+  return { sessionVersion: user.sessionVersion, user: {
     id: user.id,
     onboardingCompleted: user.onboardingCompleted,
     onboardingCompletedAt: user.onboardingCompletedAt,
@@ -41,11 +42,11 @@ export async function authenticateUser({ email, password }) {
     profileImageUrl: user.profileImageUrl,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
-  };
+  } };
 }
 
-export function createAuthToken(userId) {
-  return jwt.sign({}, env.JWT_SECRET, {
+export function createAuthToken(userId, sessionVersion = 0) {
+  return jwt.sign({ ver: sessionVersion }, env.JWT_SECRET, {
     subject: userId,
     expiresIn: AUTH_TOKEN_TTL_SECONDS,
     issuer: "student-planner-api",

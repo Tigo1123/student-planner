@@ -95,3 +95,43 @@ before deploying the web service; do not substitute `migrate dev`, `db push`, or
 22. Test mobile layout.
 23. Check browser console.
 24. Check backend logs.
+
+## Password recovery
+
+Configure `EMAIL_PROVIDER=resend`, `EMAIL_FROM` as an email address on a verified
+sender domain, and `RESEND_API_KEY` in the hosting secret store. Production startup
+requires configured delivery; development defaults to `EMAIL_PROVIDER=disabled`
+and never logs reset links. Set `FRONTEND_ORIGIN` to the trusted frontend origin:
+`http://localhost:5173` locally or the actual HTTPS frontend origin in production.
+Reset links always use that origin, never a request Host header.
+
+Apply `npm run prisma:migrate:deploy`, build/generate the API, deploy it, then
+build/deploy the frontend. Existing accounts retain passwords and sessions.
+Successful password resets invalidate all that user's earlier JWT cookies. Legacy
+JWTs without a version remain valid at version zero until that user's first reset.
+Authenticated requests now check the user's session version in PostgreSQL.
+
+`POST /api/auth/forgot-password` accepts `{ "email": "..." }` and returns a generic
+response, including unknown accounts or provider failures. Requests are limited
+to 5 per IP and 3 per email per 15 minutes. Email-throttled requests also return
+the generic success. `POST /api/auth/reset-password` accepts `token`, `password`,
+and `confirmPassword`, with 15 attempts per IP per 15 minutes. Rate-limit stores
+are process-local, matching existing auth limits; use a shared store before
+scaling the API horizontally.
+
+Recovery tokens are random 32-byte secrets, SHA-256 hashed in PostgreSQL, valid
+for 20 minutes, and replaced on each accepted request. Successful reset atomically
+consumes the token and increments the session version. Provider requests time
+out after 4 seconds; valid forgot requests have a 5-second response floor to mask
+normal delivery timing. Failed deliveries revoke that request's token and log a
+redacted operational warning. Monitor provider health; users can request a new
+link after a failure. No durable email retry queue is included.
+
+Password rules remain the existing 8–128 character policy, using bcrypt at 12
+rounds. Existing bcrypt behavior beyond 72 bytes is unchanged. Do not log request
+bodies or frontend reset query parameters in proxies, analytics, or error tracking.
+
+Run `npm test` and `npm run verify:password-recovery` with a disposable PostgreSQL
+database. The integration test intercepts Resend calls in memory; it sends no
+external emails. `scripts/verify-password-recovery-migration.sh` verifies the
+migration against a pre-existing account in its guarded disposable database.

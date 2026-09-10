@@ -13,12 +13,25 @@ const envSchema = z.object({
     .refine((value) => new URL(value).origin === value, {
       message: "FRONTEND_ORIGIN must be an exact origin without a path or trailing slash.",
     }),
+  EMAIL_PROVIDER: z.enum(["disabled", "resend"]).default("disabled"),
+  EMAIL_FROM: z.string().email().optional(),
+  RESEND_API_KEY: z.string().min(1).optional(),
   PORT: z.coerce.number().int().positive().default(4000),
   AVATAR_STORAGE_PROVIDER: z.enum(["cloudinary", "memory"]).default("memory"),
   CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
   CLOUDINARY_API_KEY: z.string().min(1).optional(),
   CLOUDINARY_API_SECRET: z.string().min(1).optional(),
 }).superRefine((value, context) => {
+  if (value.NODE_ENV === "production" && value.EMAIL_PROVIDER !== "resend") {
+    context.addIssue({ code: "custom", path: ["EMAIL_PROVIDER"], message: "Production password recovery requires configured email delivery." });
+  }
+  if (value.EMAIL_PROVIDER === "resend" && (!value.EMAIL_FROM || !value.RESEND_API_KEY)) {
+    context.addIssue({ code: "custom", path: ["EMAIL_PROVIDER"], message: "Resend requires EMAIL_FROM and RESEND_API_KEY." });
+  }
+  if (value.NODE_ENV === "production" && !value.FRONTEND_ORIGIN.startsWith("https://")) {
+    context.addIssue({ code: "custom", path: ["FRONTEND_ORIGIN"], message: "Production frontend must use HTTPS." });
+  }
+
   if (value.NODE_ENV === "production" && value.AVATAR_STORAGE_PROVIDER !== "cloudinary") {
     context.addIssue({ code: "custom", path: ["AVATAR_STORAGE_PROVIDER"], message: "Production avatar storage must use cloudinary." });
   }

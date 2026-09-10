@@ -22,9 +22,14 @@ remain in the API's HttpOnly session cookie and are never read by this app.
 - Environment variable: `VITE_API_URL=https://<render-service-domain>`
 
 Configure Render's rewrite rule from `/*` to `/index.html`, so direct visits to
-`/login`, `/register`, and `/app` work with React Router. Set
+`/login`, `/register`, `/forgot-password`, `/reset-password`, `/onboarding`, and `/app` work with React Router. Set
 `VITE_API_URL` for Production (and any Preview environment you intend to test),
 then redeploy after changing it because Vite embeds the value at build time.
 
 The Render API's `FRONTEND_ORIGIN` must exactly match the final frontend HTTPS
 origin and must not include a trailing slash.
+
+Password recovery uses the API's configured `FRONTEND_ORIGIN` to build reset links.
+Keep the existing Render `/*` → `/index.html` rewrite (not a redirect); query
+parameters must be preserved. The HTML sets `Referrer-Policy` via a no-referrer
+meta tag to protect reset links. Do not collect reset URL query strings in analytics.

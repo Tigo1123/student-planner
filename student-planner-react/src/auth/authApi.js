@@ -21,3 +21,14 @@ export function logoutUser() {
 export function getCurrentUser() {
   return apiRequest("/api/auth/me");
 }
+
+export function forgotPassword(email) {
+  return apiRequest("/api/auth/forgot-password", {
+    method: "POST", body: JSON.stringify({ email }), signal: AbortSignal.timeout(15000),
+  });
+}
+export function resetPassword(input) {
+  return apiRequest("/api/auth/reset-password", {
+    method: "POST", body: JSON.stringify(input), signal: AbortSignal.timeout(15000),
+  });
+}
