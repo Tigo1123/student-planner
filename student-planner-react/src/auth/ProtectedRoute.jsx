@@ -1,8 +1,8 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "./authContext.js";
 
-export function ProtectedRoute() {
-  const { isAuthenticated, loading } = useAuth();
+export function ProtectedRoute({ onboarding = false }) {
+  const { user, isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
   if (loading) return <AuthLoadingScreen />;
@@ -17,16 +17,18 @@ export function ProtectedRoute() {
     );
   }
 
+  if (!user.onboardingCompleted && !onboarding) return <Navigate to="/onboarding" replace />;
+  if (user.onboardingCompleted && onboarding) return <Navigate to="/app" replace />;
   return <Outlet />;
 }
 
 export function PublicOnlyRoute() {
-  const { isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
 
   if (loading) return <AuthLoadingScreen />;
 
   return isAuthenticated
-    ? <Navigate to="/app" replace />
+    ? <Navigate to={user.onboardingCompleted ? "/app" : "/onboarding"} replace />
     : <Outlet />;
 }
 

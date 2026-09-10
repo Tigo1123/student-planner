@@ -5,7 +5,7 @@ import { requireOwnedCourse } from "../courses/courses.service.js";
 
 const include = { course: true };
 
-async function ensureNoOverlap(database, userId, input, excludeId) {
+export async function ensureNoOverlap(database, userId, input, excludeId) {
   const overlap = await database.classSchedule.findFirst({
     where: {
       userId,

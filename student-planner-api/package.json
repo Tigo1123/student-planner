@@ -16,7 +16,9 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "build": "npm run prisma:generate",
     "verify:integration": "node scripts/integration-check.js",
-    "verify:academic": "node scripts/academic-integration-check.js"
+    "verify:academic": "node scripts/academic-integration-check.js",
+    "test": "node --test tests/*.test.js",
+    "verify:onboarding": "node scripts/onboarding-integration-check.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

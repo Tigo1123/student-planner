@@ -2,6 +2,9 @@ import { prisma } from "../../config/database.js";
 
 const safeUserSelect = {
   id: true,
+  onboardingCompleted: true,
+  onboardingCompletedAt: true,
+  academicProfile: true,
   name: true,
   email: true,
   profileImageUrl: true,

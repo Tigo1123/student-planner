@@ -32,8 +32,8 @@ export async function getCourse(userId, id) {
   return { ...course, incompleteAssignmentCount, upcomingExamCount };
 }
 
-export function createCourse(userId, input) {
-  return prisma.course.create({ data: { ...input, userId }, include: { _count: counts } });
+export function createCourse(userId, input, database = prisma) {
+  return database.course.create({ data: { ...input, userId }, include: { _count: counts } });
 }
 
 export async function updateCourse(userId, id, input) {

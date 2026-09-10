@@ -1,3 +1,4 @@
+import { onboardingRouter } from "./modules/onboarding/onboarding.routes.js";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -35,6 +36,7 @@ app.get("/api/health", (_request, response) => {
   response.json({ status: "ok" });
 });
 app.use("/api/auth", authRouter);
+app.use("/api/onboarding", onboardingRouter);
 app.use("/api/users", profileRouter);
 app.use("/api/courses", coursesRouter);
 app.use("/api/assignments", assignmentsRouter);

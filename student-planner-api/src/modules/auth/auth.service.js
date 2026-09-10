@@ -33,6 +33,9 @@ export async function authenticateUser({ email, password }) {
 
   return {
     id: user.id,
+    onboardingCompleted: user.onboardingCompleted,
+    onboardingCompletedAt: user.onboardingCompletedAt,
+    academicProfile: user.academicProfile,
     name: user.name,
     email: user.email,
     profileImageUrl: user.profileImageUrl,

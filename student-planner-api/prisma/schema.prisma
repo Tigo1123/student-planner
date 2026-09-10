@@ -14,6 +14,11 @@ model User {
   passwordHash     String
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+  onboardingCompleted Boolean @default(false)
+  onboardingCompletedAt DateTime?
+  onboardingDraft Json @default("{}")
+  onboardingRevision Int @default(0)
+  academicProfile Json @default("{}")
   legacyImportedAt DateTime?
   profileImageUrl String?
   profileImagePublicId String?

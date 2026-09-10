@@ -1,3 +1,4 @@
+import OnboardingPage from "./pages/OnboardingPage.jsx";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute, PublicOnlyRoute } from "./auth/ProtectedRoute.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
       </Route>
+      <Route element={<ProtectedRoute onboarding />}><Route path="/onboarding" element={<OnboardingPage />} /></Route>
       <Route element={<ProtectedRoute />}>
         <Route path="/app" element={<PlannerPage />} />
         <Route path="/app/courses" element={<CoursesPage />} />
