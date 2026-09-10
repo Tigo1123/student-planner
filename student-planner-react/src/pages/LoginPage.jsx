@@ -1,3 +1,4 @@
+import PasswordInput from "../components/PasswordInput.jsx";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout.jsx";
@@ -38,6 +39,7 @@ function LoginPage() {
       title="Sign in to your planner"
       description="Continue planning your studies and school days."
     >
+      {location.state?.passwordReset && <p role="status" className="auth-success">Your password has been reset. Sign in with your new password.</p>}
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <div className="auth-field">
           <label htmlFor="login-email">Email</label>
@@ -57,7 +59,7 @@ function LoginPage() {
         </div>
         <div className="auth-field">
           <label htmlFor="login-password">Password</label>
-          <input
+          <PasswordInput
             id="login-password"
             type="password"
             value={password}
@@ -70,6 +72,7 @@ function LoginPage() {
             }}
           />
         </div>
+        <Link className="auth-recovery-link" to="/forgot-password" aria-label="Forgot password?">Forgot password?</Link>
         {error && <p className="auth-error" id="login-error" role="alert">{error}</p>}
         <button className="auth-submit" type="submit" disabled={submitting}>
           {submitting ? "Signing in…" : "Sign in"}
