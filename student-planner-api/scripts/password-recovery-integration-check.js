@@ -31,6 +31,17 @@ const rawToken = message => new URL(message.text.match(/https?:\/\/\S+/)[0]).sea
 const reset = (token, password = "new-password-123", confirmPassword = password) => request("/api/auth/reset-password", { token, password, confirmPassword });
 async function issue(email) { await requestPasswordReset(email); return rawToken(emails.at(-1)); }
 try {
+  // Public recovery must reach validation before any session authentication.
+  const publicValidation = await request("/api/auth/reset-password", {});
+  assert.equal(publicValidation.status, 400);
+  assert.equal(publicValidation.body.error.code, "VALIDATION_ERROR");
+  const unknownAuthRoute = await request("/api/auth/not-a-route", {});
+  assert.equal(unknownAuthRoute.status, 404, "Unmatched auth paths must not reach planner requireAuth");
+  for (const path of ["/api/auth/me", "/api/users/me", "/api/tasks", "/api/events", "/api/courses", "/api/schedule", "/api/onboarding"]) {
+    const protectedResponse = await request(path);
+    assert.equal(protectedResponse.status, 401, `${path} must still require authentication`);
+    assert.equal(protectedResponse.body.error.code, "UNAUTHENTICATED");
+  }
   const email = `recovery-${crypto.randomUUID()}@example.com`;
   const registered = await request("/api/auth/register", { name: "Recovery test", email, password: "old-password-123" });
   assert.equal(registered.status, 201); ids.push(registered.body.user.id);
@@ -41,7 +52,8 @@ try {
   const known = await request("/api/auth/forgot-password", { email });
   const token = rawToken(emails.at(-1));
   const unknown = await request("/api/auth/forgot-password", { email: "unknown-recovery@example.com" });
-  assert.equal(known.status, 200); assert.deepEqual(known.body, unknown.body);
+  assert.equal(known.status, 200); assert.equal(unknown.status, 200); assert.deepEqual(known.body, unknown.body);
+  assert.equal(known.body.message, "If an account exists for this email, a password reset link has been sent.");
   assert.equal(emails.length, 1);
   const record = await prisma.user.findUnique({ where: { id: ids[0] } });
   assert.equal(record.resetPasswordTokenHash, createHash("sha256").update(token).digest("hex"));

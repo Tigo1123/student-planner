@@ -35,7 +35,8 @@ app.use(verifyRequestOrigin);
 app.get("/api/health", (_request, response) => {
   response.json({ status: "ok" });
 });
-app.use("/api/auth", authRouter);
+// Unknown auth URLs must not fall through to the authenticated /api planner router.
+app.use("/api/auth", authRouter, notFound);
 app.use("/api/onboarding", onboardingRouter);
 app.use("/api/users", profileRouter);
 app.use("/api/courses", coursesRouter);
