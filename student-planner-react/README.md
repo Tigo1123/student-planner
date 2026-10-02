@@ -29,6 +29,12 @@ then redeploy after changing it because Vite embeds the value at build time.
 The Render API's `FRONTEND_ORIGIN` must exactly match the final frontend HTTPS
 origin and must not include a trailing slash.
 
+The app includes a web app manifest, an install prompt on supported browsers,
+and a service worker that caches the app shell and same-origin static assets.
+Installability requires an HTTPS deployment (or localhost during development).
+The service worker does not cache API responses, so signed-in planner data and
+changes still require a connection to the API.
+
 Password recovery uses the API's configured `FRONTEND_ORIGIN` to build reset links.
 Keep the existing Render `/*` → `/index.html` rewrite (not a redirect); query
 parameters must be preserved. The HTML sets `Referrer-Policy` via a no-referrer

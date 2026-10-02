@@ -11,9 +11,11 @@ import AssignmentsPage from "./pages/AssignmentsPage.jsx";
 import ExamsPage from "./pages/ExamsPage.jsx";
 import TimetablePage from "./pages/TimetablePage.jsx";
 import DeadlinesPage from "./pages/DeadlinesPage.jsx";
+import PwaInstallPrompt from "./components/PwaInstallPrompt.jsx";
 
 function App() {
   return (
+    <>
     <Routes>
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -32,6 +34,8 @@ function App() {
       </Route>
       <Route path="*" element={<Navigate to="/app" replace />} />
     </Routes>
+    <PwaInstallPrompt />
+    </>
   );
 }
 
